@@ -3,9 +3,7 @@
 
 This plugin has been designed to be used along with single and double elimination brackets.
 
-Currently it supports MultiGP format with Chace the Ace and Iron Man rule. 
-
-FAI brackets to be supported soon.
+It supports MultiGP format with Chace the Ace and Iron Man rule. Also FAI brackets are supported according to F9U rules.
 
 ## Installation
 
