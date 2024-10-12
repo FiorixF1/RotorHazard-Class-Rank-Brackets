@@ -440,6 +440,7 @@ def brackets(rhapi, race_class, args):
         leaderboard = build_leaderboard_generic(rhapi, heats, args["bracket_type"])
     except Exception as e:
         logger.error(f"Brackets-rank-plugin: failed building ranking, an exception occurred while generating leaderboard ({e})")
+        return {}, {}
 
     if not leaderboard:
         logger.error(f"Brackets-rank-plugin: failed building ranking, unsupported format (" + args["bracket_type"] + " brackets with " + str(len(heats)) + " heats)")
@@ -450,6 +451,7 @@ def brackets(rhapi, race_class, args):
         apply_tiebreaker_generic(leaderboard, qualifier, args["bracket_type"])
     except Exception as e:
         logger.error(f"Brackets-rank-plugin: failed building ranking, an exception occurred while resolving ties ({e})")
+        return {}, {}
 
     """ apply Chase the Ace and Iron Man rule """
     if 'chase_the_ace' in args and args['chase_the_ace']:
