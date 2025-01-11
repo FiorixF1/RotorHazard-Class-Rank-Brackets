@@ -3,7 +3,10 @@
 
 This plugin has been designed to be used along with single and double elimination brackets.
 
-It supports MultiGP format with Chace the Ace and Iron Man rule. Also FAI brackets are supported according to F9U rules.
+It supports:
+* MultiGP format with Chace the Ace and Iron Man rule (16 pilots, double elimination)
+* FAI brackets according to F9U rules (16/32/64 pilots, both single and double elimination)
+* Coppa Italia format for year 2025 (16 pilots, double elimination)
 
 ## Installation
 

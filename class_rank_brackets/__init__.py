@@ -17,6 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 
+# Constants
+MULTIGP = "MultiGP"
+FAI = "FAI"
+COPPA_ITALIA = "Coppa Italia"
+
+
 def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
     # assume that first_position < second_position and they are 1-based
     from_index = first_position-1
@@ -37,13 +43,13 @@ def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
 
 
 def apply_tiebreaker_generic(leaderboard, qualifier, bracket_type):
-    if bracket_type == "MultiGP":
+    if bracket_type == MULTIGP or bracket_type == COPPA_ITALIA:
         # multigp16
         apply_tiebreaker(leaderboard, qualifier, 9, 10)        # Q1
         apply_tiebreaker(leaderboard, qualifier, 11, 12)       # Q2
         apply_tiebreaker(leaderboard, qualifier, 13, 14)       # Q3
         apply_tiebreaker(leaderboard, qualifier, 15, 16)       # Q4
-    elif bracket_type == "FAI":
+    elif bracket_type == FAI:
         if len(heats) == 8:
             # fai16
             apply_tiebreaker(leaderboard, qualifier, 9,  16)   # Q1
@@ -112,7 +118,7 @@ def build_leaderboard_object(rhapi, position, heats, heat_number, heat_position,
 
 
 def build_leaderboard_generic(rhapi, heats, bracket_type):
-    if bracket_type == "MultiGP":
+    if bracket_type == MULTIGP or bracket_type == COPPA_ITALIA:
         # multigp16
         return [
             None,  # top 4 positions are handled later due to CTA logic
@@ -136,7 +142,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             build_leaderboard_object(rhapi, 15, heats, 5,  4, "4° in Heat 5"),   # to be fixed Q4
             build_leaderboard_object(rhapi, 16, heats, 7,  4, "4° in Heat 7")    # to be fixed Q4
         ]
-    elif bracket_type == "FAI":
+    elif bracket_type == FAI:
         if len(heats) == 8:
             # fai16
             return [
@@ -485,7 +491,8 @@ def brackets(rhapi, race_class, args):
             pilot_id = slot.pilot_id
             winners[pilot_id] = {
                 "wins": 0,
-                "points": 0
+                "points": 0,
+                "big_points": 0
             }
 
         winners_names = []
@@ -518,6 +525,11 @@ def brackets(rhapi, race_class, args):
                 winners[heat_leaderboard[2]['pilot_id']]["points"] += 3
                 winners[heat_leaderboard[3]['pilot_id']]["points"] += 4
 
+                winners[heat_leaderboard[0]['pilot_id']]["big_points"] += 1000
+                winners[heat_leaderboard[1]['pilot_id']]["big_points"] += 100
+                winners[heat_leaderboard[2]['pilot_id']]["big_points"] += 10
+                winners[heat_leaderboard[3]['pilot_id']]["big_points"] += 1
+
                 RACE_IS_OVER = False
                 for pilot_id in winners:
                     if winners[pilot_id]["wins"] > 1:
@@ -525,24 +537,53 @@ def brackets(rhapi, race_class, args):
                         RACE_IS_OVER = True
                         break
                 if RACE_IS_OVER:
-                    # positions from second to fourth are point based
-                    # in case of a tie, the result of the latest heat is considered
-                    # the smartest way to implement this is take the leaderboard of the last heat and order it by points using Bubblesort as sorting algorithm
-                    # it makes sense because Bubblesort does not alter the order of items that are equal 
-                    # and it is efficient since we have to order only three elements :)
-                    if winners[heat_leaderboard[1]['pilot_id']]["points"] > winners[heat_leaderboard[2]['pilot_id']]["points"]:
-                        heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
-                    if winners[heat_leaderboard[2]['pilot_id']]["points"] > winners[heat_leaderboard[3]['pilot_id']]["points"]:
-                        heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
-                    if winners[heat_leaderboard[1]['pilot_id']]["points"] > winners[heat_leaderboard[2]['pilot_id']]["points"]:
-                        heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
-                    if winners[heat_leaderboard[2]['pilot_id']]["points"] > winners[heat_leaderboard[3]['pilot_id']]["points"]:
-                        heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
-
-                    leaderboard[0] = build_leaderboard_object_basic(rhapi, 1, heat_leaderboard[0], f"CTA [{winners[heat_leaderboard[0]['pilot_id']]['points']}] [1]")
-                    leaderboard[1] = build_leaderboard_object_basic(rhapi, 2, heat_leaderboard[1], f"[{winners[heat_leaderboard[1]['pilot_id']]['points']}] [2]")
-                    leaderboard[2] = build_leaderboard_object_basic(rhapi, 3, heat_leaderboard[2], f"[{winners[heat_leaderboard[2]['pilot_id']]['points']}] [3]")
-                    leaderboard[3] = build_leaderboard_object_basic(rhapi, 4, heat_leaderboard[3], f"[{winners[heat_leaderboard[3]['pilot_id']]['points']}] [4]")
+                    if args["bracket_type"] != COPPA_ITALIA:
+                        # positions from second to fourth are point based
+                        # in case of a tie, the result of the latest heat is considered
+                        # the smartest way to implement this is take the leaderboard of the last heat and order it by points using Bubblesort as sorting algorithm
+                        # it makes sense because Bubblesort does not alter the order of items that are equal 
+                        # and it is efficient since we have to order only three elements :)
+                        if winners[heat_leaderboard[1]['pilot_id']]["points"] > winners[heat_leaderboard[2]['pilot_id']]["points"]:
+                            heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
+                        if winners[heat_leaderboard[2]['pilot_id']]["points"] > winners[heat_leaderboard[3]['pilot_id']]["points"]:
+                            heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
+                        if winners[heat_leaderboard[1]['pilot_id']]["points"] > winners[heat_leaderboard[2]['pilot_id']]["points"]:
+                            heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
+                        if winners[heat_leaderboard[2]['pilot_id']]["points"] > winners[heat_leaderboard[3]['pilot_id']]["points"]:
+                            heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
+                        # build top-4 leaderboard
+                        leaderboard[0] = build_leaderboard_object_basic(rhapi, 1, heat_leaderboard[0], f"CTA [{winners[heat_leaderboard[0]['pilot_id']]['points']}] [1]")
+                        leaderboard[1] = build_leaderboard_object_basic(rhapi, 2, heat_leaderboard[1], f"[{winners[heat_leaderboard[1]['pilot_id']]['points']}] [2]")
+                        leaderboard[2] = build_leaderboard_object_basic(rhapi, 3, heat_leaderboard[2], f"[{winners[heat_leaderboard[2]['pilot_id']]['points']}] [3]")
+                        leaderboard[3] = build_leaderboard_object_basic(rhapi, 4, heat_leaderboard[3], f"[{winners[heat_leaderboard[3]['pilot_id']]['points']}] [4]")
+                    else:
+                        # Coppa Italia ranking is similar to MultiGP/FAI, but points are different and, in case of a tie, qualifier class is used as tiebreaker
+                        if winners[heat_leaderboard[1]['pilot_id']]["big_points"] < winners[heat_leaderboard[2]['pilot_id']]["big_points"]:
+                            heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
+                        if winners[heat_leaderboard[2]['pilot_id']]["big_points"] < winners[heat_leaderboard[3]['pilot_id']]["big_points"]:
+                            heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
+                        if winners[heat_leaderboard[1]['pilot_id']]["big_points"] < winners[heat_leaderboard[2]['pilot_id']]["big_points"]:
+                            heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
+                        if winners[heat_leaderboard[2]['pilot_id']]["big_points"] < winners[heat_leaderboard[3]['pilot_id']]["big_points"]:
+                            heat_leaderboard[2], heat_leaderboard[3] = heat_leaderboard[3], heat_leaderboard[2]
+                        # build temporary top-4 leaderboard (ties have not been solved yet)
+                        leaderboard[0] = build_leaderboard_object_basic(rhapi, 1, heat_leaderboard[0], "")
+                        leaderboard[1] = build_leaderboard_object_basic(rhapi, 2, heat_leaderboard[1], "")
+                        leaderboard[2] = build_leaderboard_object_basic(rhapi, 3, heat_leaderboard[2], "")
+                        leaderboard[3] = build_leaderboard_object_basic(rhapi, 4, heat_leaderboard[3], "")
+                        # look for ties and solve them
+                        if winners[heat_leaderboard[1]['pilot_id']]["big_points"] == winners[heat_leaderboard[2]['pilot_id']]["big_points"] and \
+                           winners[heat_leaderboard[1]['pilot_id']]["big_points"] == winners[heat_leaderboard[3]['pilot_id']]["big_points"]:
+                            apply_tiebreaker(leaderboard, qualifier, 2, 4)
+                        elif winners[heat_leaderboard[1]['pilot_id']]["big_points"] == winners[heat_leaderboard[2]['pilot_id']]["big_points"]:
+                            apply_tiebreaker(leaderboard, qualifier, 2, 3)
+                        elif winners[heat_leaderboard[2]['pilot_id']]["big_points"] == winners[heat_leaderboard[3]['pilot_id']]["big_points"]:
+                            apply_tiebreaker(leaderboard, qualifier, 3, 4)
+                        # update top-4 leaderboard
+                        leaderboard[0]["result"] = "CTA [1] [1]"
+                        leaderboard[1]["result"] = "[2] [2]"
+                        leaderboard[2]["result"] = "[3] [3]"
+                        leaderboard[3]["result"] = "[4] [4]"
 
                     rhapi.ui.message_alert(rhapi.__('Chase the Ace Winner: {}').format(leaderboard[0]['callsign']))
 
@@ -592,7 +633,7 @@ def register_handlers(rhapi, args):
             "Brackets",
             brackets,
             {
-                'bracket_type': "MultiGP",
+                'bracket_type': MULTIGP,
                 'qualifier_class': default_class,
                 'chase_the_ace': True,
                 'iron_man': True,
@@ -601,10 +642,11 @@ def register_handlers(rhapi, args):
                 UIField('bracket_type',
                     "Bracket type",
                     UIFieldType.SELECT,
-                    options=[UIFieldSelectOption("MultiGP", "MultiGP"),
-                             UIFieldSelectOption("FAI", "FAI")],
-                    value="MultiGP",
-                    desc="Type of brackets (MultiGP or FAI)"),
+                    options=[UIFieldSelectOption(MULTIGP, MULTIGP),
+                             UIFieldSelectOption(FAI, FAI),
+                             UIFieldSelectOption(COPPA_ITALIA, COPPA_ITALIA)],
+                    value=MULTIGP,
+                    desc="Type of brackets"),
                 UIField('qualifier_class',
                     "Qualifier class",
                     UIFieldType.SELECT,
