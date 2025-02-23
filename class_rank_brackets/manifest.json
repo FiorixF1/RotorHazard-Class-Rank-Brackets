@@ -2,11 +2,11 @@
     "name": "Class Rank: Brackets",
     "author": "FiorixF1",
     "author_uri": "https://github.com/FiorixF1",
-    "description": "Class ranking following brackets used in MultiGP, FAI and Coppa Italia",
+    "description": "Class ranking following brackets used in MultiGP, FAI and CSI Drone Racing",
     "info_uri": "https://github.com/FiorixF1/RotorHazard-Class-Rank-Brackets/",
     "license": "RotorHazard",
     "license_uri": "https://github.com/RotorHazard/RotorHazard/blob/main/LICENSE",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "required_rhapi_version": "1.0",
     "update_uri": null,
     "text_domain": null

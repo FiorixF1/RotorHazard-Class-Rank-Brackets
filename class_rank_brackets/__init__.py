@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Constants
 MULTIGP = "MultiGP"
 FAI = "FAI"
-COPPA_ITALIA = "Coppa Italia"
+CSI = "CSI Drone Racing"
 
 
 def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
@@ -43,7 +43,7 @@ def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
 
 
 def apply_tiebreaker_generic(leaderboard, qualifier, bracket_type):
-    if bracket_type == MULTIGP or bracket_type == COPPA_ITALIA:
+    if bracket_type == MULTIGP or bracket_type == CSI:
         # multigp16
         apply_tiebreaker(leaderboard, qualifier, 9, 10)        # Q1
         apply_tiebreaker(leaderboard, qualifier, 11, 12)       # Q2
@@ -118,7 +118,7 @@ def build_leaderboard_object(rhapi, position, heats, heat_number, heat_position,
 
 
 def build_leaderboard_generic(rhapi, heats, bracket_type):
-    if bracket_type == MULTIGP or bracket_type == COPPA_ITALIA:
+    if bracket_type == MULTIGP or bracket_type == CSI:
         # multigp16
         return [
             None,  # top 4 positions are handled later due to CTA logic
@@ -537,7 +537,7 @@ def brackets(rhapi, race_class, args):
                         RACE_IS_OVER = True
                         break
                 if RACE_IS_OVER:
-                    if args["bracket_type"] != COPPA_ITALIA:
+                    if args["bracket_type"] != CSI:
                         # positions from second to fourth are point based
                         # in case of a tie, the result of the latest heat is considered
                         # the smartest way to implement this is take the leaderboard of the last heat and order it by points using Bubblesort as sorting algorithm
@@ -557,7 +557,7 @@ def brackets(rhapi, race_class, args):
                         leaderboard[2] = build_leaderboard_object_basic(rhapi, 3, heat_leaderboard[2], f"[{winners[heat_leaderboard[2]['pilot_id']]['points']}] [3]")
                         leaderboard[3] = build_leaderboard_object_basic(rhapi, 4, heat_leaderboard[3], f"[{winners[heat_leaderboard[3]['pilot_id']]['points']}] [4]")
                     else:
-                        # Coppa Italia ranking is similar to MultiGP/FAI, but points are different and, in case of a tie, qualifier class is used as tiebreaker
+                        # CSI ranking is similar to MultiGP/FAI, but points are different and, in case of a tie, qualifier class is used as tiebreaker
                         if winners[heat_leaderboard[1]['pilot_id']]["big_points"] < winners[heat_leaderboard[2]['pilot_id']]["big_points"]:
                             heat_leaderboard[1], heat_leaderboard[2] = heat_leaderboard[2], heat_leaderboard[1]
                         if winners[heat_leaderboard[2]['pilot_id']]["big_points"] < winners[heat_leaderboard[3]['pilot_id']]["big_points"]:
@@ -633,7 +633,7 @@ def register_handlers(rhapi, args):
             "Brackets",
             brackets,
             {
-                'bracket_type': MULTIGP,
+                'bracket_type': CSI,
                 'qualifier_class': default_class,
                 'chase_the_ace': True,
                 'iron_man': True,
@@ -642,10 +642,10 @@ def register_handlers(rhapi, args):
                 UIField('bracket_type',
                     "Bracket type",
                     UIFieldType.SELECT,
-                    options=[UIFieldSelectOption(MULTIGP, MULTIGP),
-                             UIFieldSelectOption(FAI, FAI),
-                             UIFieldSelectOption(COPPA_ITALIA, COPPA_ITALIA)],
-                    value=MULTIGP,
+                    options=[UIFieldSelectOption(CSI, CSI),
+                             UIFieldSelectOption(MULTIGP, MULTIGP),
+                             UIFieldSelectOption(FAI, FAI)],
+                    value=CSI,
                     desc="Type of brackets"),
                 UIField('qualifier_class',
                     "Qualifier class",
