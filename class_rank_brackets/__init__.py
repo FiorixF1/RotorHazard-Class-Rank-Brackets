@@ -23,6 +23,7 @@ FAI = "FAI"
 CSI = "CSI Drone Racing"
 
 
+
 def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
     # assume that first_position < second_position and they are 1-based
     from_index = first_position-1
@@ -32,13 +33,15 @@ def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
     leaderboard_slice = leaderboard[from_index:to_index]
 
     # order them by position in qualifier class
-    leaderboard_slice = sorted(leaderboard_slice, key=lambda x: qualifier.index(x['pilot_id']))
+    leaderboard_slice = sorted(leaderboard_slice, key=lambda x: qualifier.index(x['pilot_id']) if x else 1024) # corner case for missing pilots
 
     for i in range(to_index-from_index):
         # update the order of pilots in the leaderboard
         leaderboard[from_index+i] = leaderboard_slice[i]
         # and their position
-        leaderboard[from_index+i]['position'] = first_position+i
+        if leaderboard[from_index+i]:
+            # corner case for missing pilots
+            leaderboard[from_index+i]['position'] = first_position+i
 
 
 
@@ -103,15 +106,17 @@ def build_leaderboard_object(rhapi, position, heats, heat_number, heat_position,
             race_result = rhapi.db.race_results(races[0])
             if race_result:
                 heat_leaderboard = race_result[race_result['meta']['primary_leaderboard']]
-                slot = heat_leaderboard[heat_position-1]
+                # corner case for heats with missing pilots
+                if heat_position <= len(heat_leaderboard):
+                    slot = heat_leaderboard[heat_position-1]
 
-                return {
-                    'pilot_id': slot['pilot_id'],
-                    'callsign': slot['callsign'],
-                    'team_name': slot['team_name'],
-                    'position': position,
-                    'result': result
-                }
+                    return {
+                        'pilot_id': slot['pilot_id'],
+                        'callsign': slot['callsign'],
+                        'team_name': slot['team_name'],
+                        'position': position,
+                        'result': result
+                    }
 
     return None
 
