@@ -619,7 +619,10 @@ def brackets(rhapi, race_class, args):
 
 
 
+class_rank_method = None
 def register_handlers(rhapi, args):
+    global class_rank_method
+
     classes = rhapi.db.raceclasses
     options = []
     for this_class in classes:
@@ -633,8 +636,8 @@ def register_handlers(rhapi, args):
     else:
         default_class = 0
 
-    args['register_fn'](
-        RaceClassRankMethod(
+    if not class_rank_method:
+        class_rank_method = RaceClassRankMethod(
             "Brackets",
             brackets,
             {
@@ -670,7 +673,16 @@ def register_handlers(rhapi, args):
                     desc="Apply the Iron Man rule in the final heat (CTA is required)"),
             ]
         )
-    )
+        args['register_fn'](class_rank_method)
+    else:
+        # update class selector if the rank has been already initialized
+        class_rank_method.settings[1].options = options
 
 def initialize(rhapi):
+    # initialization
     rhapi.events.on(Evt.CLASS_RANK_INITIALIZE, lambda args: register_handlers(rhapi, args))
+    # update
+    rhapi.events.on(Evt.CLASS_ADD, lambda args: register_handlers(rhapi, args))
+    rhapi.events.on(Evt.CLASS_DUPLICATE, lambda args: register_handlers(rhapi, args))
+    rhapi.events.on(Evt.CLASS_ALTER, lambda args: register_handlers(rhapi, args))
+    rhapi.events.on(Evt.CLASS_DELETE, lambda args: register_handlers(rhapi, args))
