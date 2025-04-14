@@ -8,13 +8,12 @@ It supports:
 * FAI brackets according to F9U rules (16/32/64 pilots, both single and double elimination)
 * CSI Drone Racing format for year 2025 (16 pilots, double elimination)
 
+
 ## Installation
 
-Copy the `class_rank_brackets` plugin into the `src/server/plugins` directory in your RotorHazard install. Start RotorHazard.
+Install through the "Community Plugins" area within RotorHazard. Alternately, copy the `class_rank_brackets` directory from inside `custom_plugins` into the plugins directory of your RotorHazard data directory.
 
-If installation is successful, the RotorHazard log will contain the message `Loaded plugin module class_rank_brackets` at startup.
 
 ## Usage
 
 After creating a class, select "Brackets" for the class ranking method. Using the settings button, enter the bracket type, choose the class used in qualification stage and set whether to use or not the Chace the Ace format and the Iron Man rule. If these options are enabled, visual feedback is provided to the race director when running the last heat.
-
