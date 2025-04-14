@@ -6,7 +6,7 @@
     "description": "Class ranking following brackets used in MultiGP, FAI and CSI Drone Racing",
     "documentation_uri": "https://github.com/FiorixF1/RotorHazard-Class-Rank-Brackets/",
     "license": "GPL-3.0",
-    "license_uri": "https://github.com/FiorixF1/blob/main/LICENSE",
+    "license_uri": "https://github.com/FiorixF1/RotorHazard-Class-Rank-Brackets/blob/main/LICENSE",
     "version": "2.0.0",
     "required_rhapi_version": "1.0",
     "category": ["Class Rankings"],
