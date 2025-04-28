@@ -441,8 +441,16 @@ def brackets(rhapi, race_class, args):
         return {}, {}
 
     qualifier = qualifier_result[qualifier_result['meta']['primary_leaderboard']]
+    # in general, leaderboards are already sorted by position, but sort them explicitly to be sure
+    # however consider that pilots could be without a value for the "position" field (for example if they do not complete any laps),
+    # handle this case by putting them at the end of the leaderboard
+    qualifier_with_position = [x for x in qualifier if x.get("position") is not None]
+    qualifier_without_position = [x for x in qualifier if x.get("position") is None]
+    for i, element in enumerate(qualifier_without_position):
+        if not element["position"]:
+            element["position"] = len(qualifier_with_position)+i+1
     # sort by position (to be safe) and extract only the pilot IDs
-    qualifier = list(map(lambda x: x['pilot_id'], sorted(qualifier, key=lambda x: x['position'])))
+    qualifier = list(map(lambda x: x['pilot_id'], sorted(qualifier_with_position, key=lambda x: x['position']) + qualifier_without_position))
 
     """ build leaderboard """
     heats = rhapi.db.heats_by_class(race_class.id)
