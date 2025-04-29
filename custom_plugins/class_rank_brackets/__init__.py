@@ -447,7 +447,7 @@ def brackets(rhapi, race_class, args):
     qualifier_with_position = [x for x in qualifier if x.get("position") is not None]
     qualifier_without_position = [x for x in qualifier if x.get("position") is None]
     for i, element in enumerate(qualifier_without_position):
-        if not element["position"]:
+        if not element.get("position"):
             element["position"] = len(qualifier_with_position)+i+1
     # sort by position (to be safe) and extract only the pilot IDs
     qualifier = list(map(lambda x: x['pilot_id'], sorted(qualifier_with_position, key=lambda x: x['position']) + qualifier_without_position))
