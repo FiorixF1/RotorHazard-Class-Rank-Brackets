@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 
-# References for 2024
-# MultiGP doc link: https://docs.google.com/document/d/1e2poO4otvcKop1ZcQ1tQZ36ztmrWm1cMIg1VS9mHLeU/edit#heading=h.c7d32jvxr7wf
-# FAI doc link: https://www.fai.org/sites/default/files/ciam/wcup_drones/sc4_vol_f9_dronesport_24_0.pdf
+# References for 2025
+# MultiGP doc link: https://docs.google.com/document/d/1U4aL9TgKGdlz1y04VMlKoSLFip_msUySuRq6ZnWwh7k/edit?tab=t.0#heading=h.yystmlsjl1ei
+# FAI doc link: https://www.fai.org/sites/default/files/ciam/wcup_drones/sc4_vol_f9_dronesport_25_1.pdf
 
 
 
@@ -45,7 +45,7 @@ def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
 
 
 
-def apply_tiebreaker_generic(leaderboard, qualifier, bracket_type):
+def apply_tiebreaker_generic(leaderboard, qualifier, number_of_heats, bracket_type):
     if bracket_type == MULTIGP or bracket_type == CSI:
         # multigp16
         apply_tiebreaker(leaderboard, qualifier, 9, 10)        # Q1
@@ -53,29 +53,29 @@ def apply_tiebreaker_generic(leaderboard, qualifier, bracket_type):
         apply_tiebreaker(leaderboard, qualifier, 13, 14)       # Q3
         apply_tiebreaker(leaderboard, qualifier, 15, 16)       # Q4
     elif bracket_type == FAI:
-        if len(heats) == 8:
+        if number_of_heats == 8:
             # fai16
             apply_tiebreaker(leaderboard, qualifier, 9,  16)   # Q1
-        elif len(heats) == 14:
+        elif number_of_heats == 14:
             # fai16de
             apply_tiebreaker(leaderboard, qualifier, 9,  12)   # Q1
             apply_tiebreaker(leaderboard, qualifier, 13, 16)   # Q2
-        elif len(heats) == 16:
+        elif number_of_heats == 16:
             # fai32
             apply_tiebreaker(leaderboard, qualifier, 9,  16)   # Q1
             apply_tiebreaker(leaderboard, qualifier, 17, 32)   # Q2
-        elif len(heats) == 30:
+        elif number_of_heats == 30:
             # fai32de
             apply_tiebreaker(leaderboard, qualifier, 9,  12)   # Q1
             apply_tiebreaker(leaderboard, qualifier, 13, 16)   # Q2
             apply_tiebreaker(leaderboard, qualifier, 17, 24)   # Q3
             apply_tiebreaker(leaderboard, qualifier, 25, 32)   # Q4
-        elif len(heats) == 32:
+        elif number_of_heats == 32:
             # fai64
             apply_tiebreaker(leaderboard, qualifier, 9,  16)   # Q1
             apply_tiebreaker(leaderboard, qualifier, 17, 32)   # Q2
             apply_tiebreaker(leaderboard, qualifier, 33, 64)   # Q3
-        elif len(heats) == 62:
+        elif number_of_heats == 62:
             # fai64de
             apply_tiebreaker(leaderboard, qualifier, 9,  12)   # Q1
             apply_tiebreaker(leaderboard, qualifier, 13, 16)   # Q2
@@ -123,33 +123,40 @@ def build_leaderboard_object(rhapi, position, heats, heat_number, heat_position,
 
 
 def build_leaderboard_generic(rhapi, heats, bracket_type):
+    logger.info(f"Found {len(heats)} heats in the bracket class")
     if bracket_type == MULTIGP or bracket_type == CSI:
-        # multigp16
-        return [
-            None,  # top 4 positions are handled later due to CTA logic
-            None,
-            None,
-            None,
-            build_leaderboard_object(rhapi, 5,  heats, 13, 3, "3° in Heat 13"),
-            build_leaderboard_object(rhapi, 6,  heats, 13, 4, "4° in Heat 13"),
-            build_leaderboard_object(rhapi, 7,  heats, 12, 3, "3° in Heat 12"),
-            build_leaderboard_object(rhapi, 8,  heats, 12, 4, "4° in Heat 12"),
-            ####################################################################################################
-            build_leaderboard_object(rhapi, 9,  heats, 9,  3, "3° in Heat 9"),   # to be fixed Q1
-            build_leaderboard_object(rhapi, 10, heats, 10, 3, "3° in Heat 10"),  # to be fixed Q1
-            ####################################################################################################
-            build_leaderboard_object(rhapi, 11, heats, 9,  4, "4° in Heat 9"),   # to be fixed Q2
-            build_leaderboard_object(rhapi, 12, heats, 10, 4, "4° in Heat 10"),  # to be fixed Q2
-            ####################################################################################################
-            build_leaderboard_object(rhapi, 13, heats, 5,  3, "3° in Heat 5"),   # to be fixed Q3
-            build_leaderboard_object(rhapi, 14, heats, 7,  3, "3° in Heat 7"),   # to be fixed Q3
-            ####################################################################################################
-            build_leaderboard_object(rhapi, 15, heats, 5,  4, "4° in Heat 5"),   # to be fixed Q4
-            build_leaderboard_object(rhapi, 16, heats, 7,  4, "4° in Heat 7")    # to be fixed Q4
-        ]
+        if len(heats) == 14:
+            # multigp16
+            logger.info(f"Format detected: MultiGP 16 pilots double elimination")
+            return [
+                None,  # top 4 positions are handled later due to CTA logic
+                None,
+                None,
+                None,
+                build_leaderboard_object(rhapi, 5,  heats, 13, 3, "3° in Heat 13"),
+                build_leaderboard_object(rhapi, 6,  heats, 13, 4, "4° in Heat 13"),
+                build_leaderboard_object(rhapi, 7,  heats, 12, 3, "3° in Heat 12"),
+                build_leaderboard_object(rhapi, 8,  heats, 12, 4, "4° in Heat 12"),
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 9,  heats, 9,  3, "3° in Heat 9"),   # to be fixed Q1
+                build_leaderboard_object(rhapi, 10, heats, 10, 3, "3° in Heat 10"),  # to be fixed Q1
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 11, heats, 9,  4, "4° in Heat 9"),   # to be fixed Q2
+                build_leaderboard_object(rhapi, 12, heats, 10, 4, "4° in Heat 10"),  # to be fixed Q2
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 13, heats, 5,  3, "3° in Heat 5"),   # to be fixed Q3
+                build_leaderboard_object(rhapi, 14, heats, 7,  3, "3° in Heat 7"),   # to be fixed Q3
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 15, heats, 5,  4, "4° in Heat 5"),   # to be fixed Q4
+                build_leaderboard_object(rhapi, 16, heats, 7,  4, "4° in Heat 7")    # to be fixed Q4
+            ]
+        else:
+            # unsupported format
+            return None
     elif bracket_type == FAI:
         if len(heats) == 8:
             # fai16
+            logger.info(f"Format detected: FAI 16 pilots single elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -171,6 +178,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             ]
         elif len(heats) == 14:
             # fai16de
+            logger.info(f"Format detected: FAI 16 pilots double elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -193,6 +201,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             ]
         elif len(heats) == 16:
             # fai32
+            logger.info(f"Format detected: FAI 32 pilots single elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -231,6 +240,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             ]
         elif len(heats) == 30:
             # fai32de
+            logger.info(f"Format detected: FAI 32 pilots double elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -271,6 +281,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             ]
         elif len(heats) == 32:
             # fai64
+            logger.info(f"Format detected: FAI 64 pilots single elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -342,6 +353,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             ]
         elif len(heats) == 62:
             # fai64de
+            logger.info(f"Format detected: FAI 64 pilots double elimination")
             return [
                 None,  # top 4 positions are handled later due to CTA logic
                 None,
@@ -428,7 +440,7 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
 def brackets(rhapi, race_class, args):
     """ look for qualifier results """
     if int(args["qualifier_class"]) == int(race_class.id):
-        logger.error(f"Brackets-rank-plugin: failed building ranking, brackets cannot use themselves as qualifier class")
+        logger.error(f"Failed building ranking: brackets cannot use themselves as qualifier class")
         return {}, {}
 
     qualifier_result = None
@@ -437,7 +449,7 @@ def brackets(rhapi, race_class, args):
             qualifier_result = rhapi.db.raceclass_results(raceclass)
 
     if not qualifier_result:
-        logger.error(f"Brackets-rank-plugin: failed building ranking, qualifier result not available")
+        logger.error(f"Failed building ranking: qualifier result not available")
         return {}, {}
 
     qualifier = qualifier_result[qualifier_result['meta']['primary_leaderboard']]
@@ -451,25 +463,27 @@ def brackets(rhapi, race_class, args):
             element["position"] = len(qualifier_with_position)+i+1
     # sort by position (to be safe) and extract only the pilot IDs
     qualifier = list(map(lambda x: x['pilot_id'], sorted(qualifier_with_position, key=lambda x: x['position']) + qualifier_without_position))
+    logger.info(f"Found {len(qualifier)} pilots in the qualifier class")
 
     """ build leaderboard """
     heats = rhapi.db.heats_by_class(race_class.id)
+    NUMBER_OF_HEATS = len(heats)
 
     try:
         leaderboard = build_leaderboard_generic(rhapi, heats, args["bracket_type"])
     except Exception as e:
-        logger.error(f"Brackets-rank-plugin: failed building ranking, an exception occurred while generating leaderboard ({e})")
+        logger.error(f"Failed building ranking: an exception occurred while generating leaderboard ({e})")
         return {}, {}
 
     if not leaderboard:
-        logger.error(f"Brackets-rank-plugin: failed building ranking, unsupported format (" + args["bracket_type"] + " brackets with " + str(len(heats)) + " heats)")
+        logger.error(f"Failed building ranking: unsupported format (" + args["bracket_type"] + " brackets with " + str(len(heats)) + " heats)")
         return {}, {}
 
     """ apply qualifier results to resolve ties """
     try:
-        apply_tiebreaker_generic(leaderboard, qualifier, args["bracket_type"])
+        apply_tiebreaker_generic(leaderboard, qualifier, NUMBER_OF_HEATS, args["bracket_type"])
     except Exception as e:
-        logger.error(f"Brackets-rank-plugin: failed building ranking, an exception occurred while resolving ties ({e})")
+        logger.error(f"Failed building ranking: an exception occurred while resolving ties ({e})")
         return {}, {}
 
     """ apply Chase the Ace and Iron Man rule """
@@ -494,8 +508,6 @@ def brackets(rhapi, race_class, args):
                             break
         else:
             IS_IRON_MAN_AVAILABLE = False
-
-        NUMBER_OF_HEATS = len(heats)
 
         # initialize data for each pilot in the final
         slots = rhapi.db.slots_by_heat(heats[-1].id)
