@@ -47,13 +47,19 @@ def apply_tiebreaker(leaderboard, qualifier, first_position, second_position):
 
 def apply_tiebreaker_generic(leaderboard, qualifier, number_of_heats, bracket_type):
     if bracket_type == MULTIGP or bracket_type == CSI:
-        # multigp16
-        apply_tiebreaker(leaderboard, qualifier, 9, 10)        # Q1
-        apply_tiebreaker(leaderboard, qualifier, 11, 12)       # Q2
-        apply_tiebreaker(leaderboard, qualifier, 13, 14)       # Q3
-        apply_tiebreaker(leaderboard, qualifier, 15, 16)       # Q4
+        # no tiebreaker for ddr8
+        if number_of_heats == 14:
+            # multigp16
+            apply_tiebreaker(leaderboard, qualifier, 9, 10)    # Q1
+            apply_tiebreaker(leaderboard, qualifier, 11, 12)   # Q2
+            apply_tiebreaker(leaderboard, qualifier, 13, 14)   # Q3
+            apply_tiebreaker(leaderboard, qualifier, 15, 16)   # Q4
     elif bracket_type == FAI:
-        if number_of_heats == 8:
+        if number_of_heats == 6:
+            # ddr8
+            apply_tiebreaker(leaderboard, qualifier, 5, 6)     # Q1
+            apply_tiebreaker(leaderboard, qualifier, 7, 8)     # Q2
+        elif number_of_heats == 8:
             # fai16
             apply_tiebreaker(leaderboard, qualifier, 9,  16)   # Q1
         elif number_of_heats == 14:
@@ -125,7 +131,20 @@ def build_leaderboard_object(rhapi, position, heats, heat_number, heat_position,
 def build_leaderboard_generic(rhapi, heats, bracket_type):
     logger.info(f"Found {len(heats)} heats in the bracket class")
     if bracket_type == MULTIGP or bracket_type == CSI:
-        if len(heats) == 14:
+        if len(heats) == 6:
+            # ddr8
+            logger.info(f"Format detected: DDR 8 pilots double elimination (MultiGP style)")
+            return [
+                None,  # top 4 positions are handled later due to CTA logic
+                None,
+                None,
+                None,
+                build_leaderboard_object(rhapi, 5,  heats, 5, 3, "3° in Heat 5"),
+                build_leaderboard_object(rhapi, 6,  heats, 5, 4, "4° in Heat 5"),
+                build_leaderboard_object(rhapi, 7,  heats, 3, 3, "3° in Heat 3"),
+                build_leaderboard_object(rhapi, 8,  heats, 3, 4, "4° in Heat 3")
+            ]
+        elif len(heats) == 14:
             # multigp16
             logger.info(f"Format detected: MultiGP 16 pilots double elimination")
             return [
@@ -154,7 +173,22 @@ def build_leaderboard_generic(rhapi, heats, bracket_type):
             # unsupported format
             return None
     elif bracket_type == FAI:
-        if len(heats) == 8:
+        if len(heats) == 6:
+            # ddr8
+            logger.info(f"Format detected: DDR 8 pilots double elimination (FAI style)")
+            return [
+                None,  # top 4 positions are handled later due to CTA logic
+                None,
+                None,
+                None,
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 5,  heats, 5, 3, "3° in Heat 5"),  # to be fixed Q1
+                build_leaderboard_object(rhapi, 6,  heats, 5, 4, "4° in Heat 5"),  # to be fixed Q1
+                ####################################################################################################
+                build_leaderboard_object(rhapi, 7,  heats, 3, 3, "3° in Heat 3"),  # to be fixed Q2
+                build_leaderboard_object(rhapi, 8,  heats, 3, 4, "4° in Heat 3")   # to be fixed Q2
+            ]
+        elif len(heats) == 8:
             # fai16
             logger.info(f"Format detected: FAI 16 pilots single elimination")
             return [
