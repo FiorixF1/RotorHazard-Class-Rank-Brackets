@@ -7,7 +7,7 @@ It supports:
 * MultiGP format with Chace the Ace and Iron Man rule (16 pilots, double elimination)
 * FAI brackets according to F9U rules (16/32/64 pilots, both single and double elimination)
 * CSI Drone Racing format (16 pilots, double elimination)
-* Unofficial 8 pilots double elimintion brackets by DDR, both MultiGP-like and FAI-like
+* Unofficial 8 pilots double elimination brackets by DDR, both MultiGP-like and FAI-like
 
 
 ## Installation
